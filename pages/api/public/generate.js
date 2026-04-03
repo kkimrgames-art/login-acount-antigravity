@@ -27,7 +27,7 @@ export default async function handler(req, res) {
           .from('auth_links')
           .insert({
             link_id: linkId,
-            created_by_chat_id: 0, // 0 indicates a public web generation
+            created_by_chat_id: 999999999, // Use a specific positive number for public web links to pass DB constraints
             expires_at: expiresAt.toISOString(),
           })
           .select()
