@@ -1,4 +1,4 @@
-import { initBot } from '../lib/telegram';
+import { initBot } from '@/lib/telegram';
 
 export default function handler(req, res) {
   if (req.method !== 'POST') {
