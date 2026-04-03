@@ -1,0 +1,40 @@
+{
+  "name": "antigravity-auth-manager",
+  "version": "1.0.0",
+  "description": "Lightweight OAuth manager for Antigravity accounts with Telegram bot control",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p ${PORT:-3001}",
+    "sync": "node scripts/sync-accounts.js",
+    "generate-secret": "node scripts/generate-secret.js",
+    "setup": "node scripts/setup.js",
+    "test-config": "node scripts/test-config.js",
+    "verify": "node scripts/verify-deployment.js",
+    "clean": "rm -rf .next node_modules",
+    "postinstall": "echo 'Installation complete'"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "node-telegram-bot-api": "^0.64.0",
+    "uuid": "^9.0.1",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "oauth",
+    "antigravity",
+    "telegram-bot",
+    "supabase",
+    "authentication"
+  ],
+  "author": "",
+  "license": "MIT"
+}
