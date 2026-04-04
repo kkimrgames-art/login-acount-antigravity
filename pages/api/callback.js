@@ -16,6 +16,29 @@ const limiter = rateLimit({
   message: 'Too many authentication attempts'
 });
 
+function classifySupabaseError(err) {
+  const msg = (err?.message || String(err || '')).toLowerCase();
+  const code = (err?.code || err?.details || '').toString().toLowerCase();
+
+  if (msg.includes('permission denied') || msg.includes('row level security') || msg.includes('rls')) {
+    return 'db_permission_denied';
+  }
+
+  if (code.includes('42501') || msg.includes('42501')) {
+    return 'db_permission_denied';
+  }
+
+  if (msg.includes('invalid api key') || msg.includes('jwt')) {
+    return 'db_invalid_key';
+  }
+
+  if (msg.includes('failed to fetch') || msg.includes('enotfound') || msg.includes('econnrefused') || msg.includes('timeout')) {
+    return 'db_network_error';
+  }
+
+  return null;
+}
+
 export default async function handler(req, res) {
   // Security checks
   if (!checkIPBlacklist(req, res)) return;
@@ -243,7 +266,12 @@ export default async function handler(req, res) {
     if (error.message.includes('timeout')) {
       return res.redirect(`/auth/${sanitizedLinkId}?error=timeout`);
     }
-    
+
+    const classified = classifySupabaseError(error);
+    if (classified) {
+      return res.redirect(`/auth/${sanitizedLinkId}?error=${classified}`);
+    }
+
     res.redirect(`/auth/${sanitizedLinkId}?error=server_error`);
   }
 }

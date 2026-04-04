@@ -28,8 +28,14 @@ export default function AuthPage() {
       const errorMessages = {
         invalid_link: 'Invalid or expired link',
         token_exchange_failed: 'Authentication failed',
+        invalid_tokens: 'Authentication failed',
         userinfo_failed: 'Failed to get user information',
+        missing_oauth_session: 'Login session expired. Please request a new link and try again.',
+        invalid_email: 'Invalid account email returned from provider',
         storage_failed: 'Failed to save account',
+        db_permission_denied: 'Database permission denied. Please verify SUPABASE_SERVICE_KEY is the Service Role key and that RLS policies exist.',
+        db_invalid_key: 'Invalid database key. Please verify SUPABASE_SERVICE_KEY on Render is correct and not anon/publishable.',
+        db_network_error: 'Database network error. Please try again or check Render outbound connectivity.',
         server_misconfigured: 'Server configuration error. Please contact the administrator to fix deployment settings and generate a new link.',
         server_error: 'Server error occurred',
         missing_params: 'Missing parameters',
@@ -67,6 +73,10 @@ export default function AuthPage() {
     window.location.href = `/api/auth/authorize?linkId=${linkId}`;
   };
 
+  const handleGptLogin = () => {
+    window.location.href = `/api/gpt/authorize?linkId=${linkId}`;
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -99,6 +109,16 @@ export default function AuthPage() {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
               Sign in with Google
+            </button>
+
+            <button onClick={handleGptLogin} style={styles.gptButton}>
+              <svg width="24" height="24" viewBox="0 0 24 24" style={styles.gptIcon}>
+                <path fill="#10A37F" d="M12 2.5c-1.77 0-3.37.73-4.5 1.9C6.37 3.23 4.77 2.5 3 2.5v2c.98 0 1.88.4 2.52 1.04C5.4 6.18 5 7.08 5 8.06h2c0-1.1.9-2 2-2 .98 0 1.88.4 2.52 1.04L12 7.58l.48-.48C13.12 6.46 14.02 6.06 15 6.06c1.1 0 2 .9 2 2h2c0-.98-.4-1.88-1.04-2.52C18.6 4.9 19.5 4.5 20.5 4.5v-2c-1.77 0-3.37.73-4.5 1.9C15.37 3.23 13.77 2.5 12 2.5z"/>
+                <path fill="#10A37F" d="M7 9.5c-1.38 0-2.5 1.12-2.5 2.5S5.62 14.5 7 14.5h1v-2H7c-.28 0-.5-.22-.5-.5s.22-.5.5-.5h1v-2H7z"/>
+                <path fill="#10A37F" d="M16 9.5h-1v2h1c.28 0 .5.22.5.5s-.22.5-.5.5h-1v2h1c1.38 0 2.5-1.12 2.5-2.5S17.38 9.5 16 9.5z"/>
+                <path fill="#10A37F" d="M10 9.5h4v5h-4v-5zm2-1.5c-2.21 0-4 1.79-4 4v7h2v-2h4v2h2v-7c0-2.21-1.79-4-4-4z"/>
+              </svg>
+              Sign in with GPT (OpenAI)
             </button>
             
             <p style={styles.note}>
@@ -251,7 +271,29 @@ const styles = {
     maxWidth: '320px',
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
   },
+  gptButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '12px',
+    background: 'white',
+    border: '2px solid #D1FAE5',
+    borderRadius: '12px',
+    padding: '16px 32px',
+    fontSize: '18px',
+    fontWeight: '700',
+    color: '#065F46',
+    cursor: 'pointer',
+    transition: 'all 0.3s',
+    width: '100%',
+    maxWidth: '320px',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+    marginTop: '14px',
+  },
   googleIcon: {
+    flexShrink: 0,
+  },
+  gptIcon: {
     flexShrink: 0,
   },
   note: {
