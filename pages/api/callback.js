@@ -20,6 +20,20 @@ function classifySupabaseError(err) {
   const msg = (err?.message || String(err || '')).toLowerCase();
   const code = (err?.code || err?.details || '').toString().toLowerCase();
 
+  // PostgREST "single()" errors
+  // PGRST116: "JSON object requested, multiple (or no) rows returned"
+  if (code.includes('pgrst116') || msg.includes('pgrst116')) {
+    return 'invalid_link';
+  }
+
+  if (
+    msg.includes('json object requested') ||
+    msg.includes('multiple (or no) rows returned') ||
+    msg.includes('results contain 0 rows')
+  ) {
+    return 'invalid_link';
+  }
+
   if (msg.includes('permission denied') || msg.includes('row level security') || msg.includes('rls')) {
     return 'db_permission_denied';
   }
@@ -257,7 +271,15 @@ export default async function handler(req, res) {
     // Redirect to success page
     res.redirect(`/auth/${sanitizedLinkId}?success=true&email=${encodeURIComponent(userInfo.email)}`);
   } catch (error) {
-    logError(error, { context: 'oauth-callback', linkId: sanitizedLinkId });
+    logError(error, {
+      context: 'oauth-callback',
+      linkId: sanitizedLinkId,
+      errCode: error?.code,
+      errHint: error?.hint,
+      errDetails: error?.details,
+      errStatus: error?.status,
+      errName: error?.name,
+    });
     
     if (error.message === 'Circuit breaker is OPEN') {
       return res.redirect(`/auth/${sanitizedLinkId}?error=service_busy`);
