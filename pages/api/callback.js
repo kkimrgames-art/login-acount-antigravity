@@ -21,6 +21,13 @@ export default async function handler(req, res) {
   if (!checkIPBlacklist(req, res)) return;
   if (!limiter(req, res)) return;
 
+  // Hard requirement: admin Supabase client must exist for link validation + account storage
+  if (!supabaseAdmin) {
+    logError(new Error('SUPABASE_SERVICE_KEY is not configured'), { context: 'startup', endpoint: 'callback' });
+    const linkId = typeof req.query?.state === 'string' ? req.query.state : 'invalid';
+    return res.redirect(`/auth/${sanitizeInput(linkId) || 'invalid'}?error=server_misconfigured`);
+  }
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -30,6 +37,21 @@ export default async function handler(req, res) {
   // Sanitize inputs
   const sanitizedLinkId = sanitizeInput(linkId);
   const sanitizedCode = sanitizeInput(code);
+
+  // Validate required OAuth env vars (misconfiguration should be explicit)
+  const missingEnv = [];
+  if (!process.env.ANTIGRAVITY_CLIENT_ID) missingEnv.push('ANTIGRAVITY_CLIENT_ID');
+  if (!process.env.ANTIGRAVITY_CLIENT_SECRET) missingEnv.push('ANTIGRAVITY_CLIENT_SECRET');
+  if (!process.env.ANTIGRAVITY_REDIRECT_URI) missingEnv.push('ANTIGRAVITY_REDIRECT_URI');
+  if (missingEnv.length) {
+    logError(new Error('Missing required OAuth environment variables'), {
+      context: 'oauth-env',
+      endpoint: 'callback',
+      missing: missingEnv,
+      linkId: sanitizedLinkId,
+    });
+    return res.redirect(`/auth/${sanitizedLinkId || 'invalid'}?error=server_misconfigured`);
+  }
 
   if (oauthError) {
     logError(new Error(`OAuth error: ${oauthError}`), { linkId: sanitizedLinkId });
@@ -101,6 +123,8 @@ export default async function handler(req, res) {
     if (!tokenResponse.ok) {
       const errorData = await tokenResponse.text();
       logError(new Error('Token exchange failed'), { 
+        context: 'token-exchange',
+        linkId: sanitizedLinkId,
         status: tokenResponse.status,
         error: errorData.substring(0, 200)
       });
@@ -111,7 +135,7 @@ export default async function handler(req, res) {
 
     // Validate tokens
     if (!tokens.access_token || !tokens.refresh_token) {
-      logError(new Error('Invalid tokens received'), { hasAccess: !!tokens.access_token, hasRefresh: !!tokens.refresh_token });
+      logError(new Error('Invalid tokens received'), { context: 'token-validate', linkId: sanitizedLinkId, hasAccess: !!tokens.access_token, hasRefresh: !!tokens.refresh_token });
       return res.redirect(`/auth/${sanitizedLinkId}?error=invalid_tokens`);
     }
 
@@ -126,6 +150,7 @@ export default async function handler(req, res) {
     ]);
 
     if (!userInfoResponse.ok) {
+      logError(new Error('Failed to get user information'), { context: 'userinfo', linkId: sanitizedLinkId, status: userInfoResponse.status });
       return res.redirect(`/auth/${sanitizedLinkId}?error=userinfo_failed`);
     }
 
@@ -133,6 +158,7 @@ export default async function handler(req, res) {
 
     // Validate email
     if (!userInfo.email || !userInfo.email.includes('@')) {
+      logError(new Error('Invalid email in user info'), { context: 'userinfo-validate', linkId: sanitizedLinkId });
       return res.redirect(`/auth/${sanitizedLinkId}?error=invalid_email`);
     }
 

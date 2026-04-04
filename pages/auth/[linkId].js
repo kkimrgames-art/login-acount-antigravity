@@ -30,6 +30,7 @@ export default function AuthPage() {
         token_exchange_failed: 'Authentication failed',
         userinfo_failed: 'Failed to get user information',
         storage_failed: 'Failed to save account',
+        server_misconfigured: 'Server configuration error. Please contact the administrator to fix deployment settings and generate a new link.',
         server_error: 'Server error occurred',
         missing_params: 'Missing parameters',
         link_expired: 'This link has expired',

@@ -17,6 +17,12 @@ export default async function handler(req, res) {
   if (!checkIPBlacklist(req, res)) return;
   if (!limiter(req, res)) return;
 
+  // Admin Supabase client is required to validate auth links
+  if (!supabaseAdmin) {
+    logError(new Error('SUPABASE_SERVICE_KEY is not configured'), { context: 'startup', endpoint: 'validate-link' });
+    return res.status(503).json({ error: 'Server misconfigured' });
+  }
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
