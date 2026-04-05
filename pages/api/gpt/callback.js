@@ -172,13 +172,18 @@ export default async function handler(req, res) {
 
         if (upsertError) throw upsertError;
 
-        await supabaseAdmin.rpc('log_audit_event', {
-          p_event_type: 'codex_account_registered',
-          p_user_email: email,
-          p_ip_address: ipAddress,
-          p_success: true,
-          p_metadata: { link_id: sanitizedLinkId }
-        }).catch(() => {});
+        try {
+          await supabaseAdmin.rpc('log_audit_event', {
+            p_event_type: 'codex_account_registered',
+            p_user_email: email,
+            p_ip_address: ipAddress,
+            p_success: true,
+            p_metadata: { link_id: sanitizedLinkId }
+          });
+        } catch (auditError) {
+          // Ignore audit log errors
+          console.warn('Audit log failed:', auditError.message);
+        }
       });
     };
 

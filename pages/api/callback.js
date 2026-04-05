@@ -246,13 +246,18 @@ export default async function handler(req, res) {
         if (insertError) throw insertError;
 
         // Log successful authentication
-        await supabaseAdmin.rpc('log_audit_event', {
-          p_event_type: 'account_registered',
-          p_user_email: userInfo.email,
-          p_ip_address: ipAddress,
-          p_success: true,
-          p_metadata: { link_id: sanitizedLinkId }
-        }).catch(() => {}); // Ignore audit log errors
+        try {
+          await supabaseAdmin.rpc('log_audit_event', {
+            p_event_type: 'account_registered',
+            p_user_email: userInfo.email,
+            p_ip_address: ipAddress,
+            p_success: true,
+            p_metadata: { link_id: sanitizedLinkId }
+          });
+        } catch (auditError) {
+          // Ignore audit log errors as they are not critical to the auth flow
+          console.warn('Audit log failed:', auditError.message);
+        }
       });
     };
 
