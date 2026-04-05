@@ -104,7 +104,7 @@ export default function AuthPage() {
             </div>
             
             <h1 style={styles.mainTitle}>Sign in to Continue</h1>
-            <p style={styles.subtitle}>Click the button below to sign in with your Google account</p>
+            <p style={styles.subtitle}>Click the button below to sign in with your Google or GPT Codex account</p>
             
             <button onClick={handleLogin} style={styles.googleButton}>
               <svg width="24" height="24" viewBox="0 0 24 24" style={styles.googleIcon}>
@@ -123,7 +123,7 @@ export default function AuthPage() {
                 <path fill="#10A37F" d="M16 9.5h-1v2h1c.28 0 .5.22.5.5s-.22.5-.5.5h-1v2h1c1.38 0 2.5-1.12 2.5-2.5S17.38 9.5 16 9.5z"/>
                 <path fill="#10A37F" d="M10 9.5h4v5h-4v-5zm2-1.5c-2.21 0-4 1.79-4 4v7h2v-2h4v2h2v-7c0-2.21-1.79-4-4-4z"/>
               </svg>
-              Sign in with GPT (OpenAI)
+              Sign in with GPT Codex
             </button>
             
             <p style={styles.note}>
