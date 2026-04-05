@@ -27,6 +27,26 @@ export default function Home() {
     }
   };
 
+  const handleGptSupport = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/public/generate', { method: 'POST' });
+      const data = await res.json();
+
+      if (data.success) {
+        // Redirect directly to the GPT authorization flow
+        window.location.href = `/api/gpt/authorize?linkId=${data.linkId}`;
+      } else {
+        setError(data.error || 'Something went wrong. Please try again.');
+        setIsLoading(false);
+      }
+    } catch (err) {
+      setError('Connection failed. Please check your internet and try again.');
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div style={styles.container}>
       <Head>
@@ -71,6 +91,26 @@ export default function Home() {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
                   Support Now with Google
+                </>
+              )}
+            </button>
+
+            <button 
+              onClick={handleGptSupport} 
+              style={isLoading ? {...styles.gptButton, ...styles.buttonLoading} : styles.gptButton}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div style={styles.spinner}></div>
+              ) : (
+                <>
+                  <svg width="24" height="24" viewBox="0 0 24 24" style={{marginRight: '12px'}}>
+                    <path fill="#10A37F" d="M12 2.5c-1.77 0-3.37.73-4.5 1.9C6.37 3.23 4.77 2.5 3 2.5v2c.98 0 1.88.4 2.52 1.04C5.4 6.18 5 7.08 5 8.06h2c0-1.1.9-2 2-2 .98 0 1.88.4 2.52 1.04L12 7.58l.48-.48C13.12 6.46 14.02 6.06 15 6.06c1.1 0 2 .9 2 2h2c0-.98-.4-1.88-1.04-2.52C18.6 4.9 19.5 4.5 20.5 4.5v-2c-1.77 0-3.37.73-4.5 1.9C15.37 3.23 13.77 2.5 12 2.5z"/>
+                    <path fill="#10A37F" d="M7 9.5c-1.38 0-2.5 1.12-2.5 2.5S5.62 14.5 7 14.5h1v-2H7c-.28 0-.5-.22-.5-.5s.22-.5.5-.5h1v-2H7z"/>
+                    <path fill="#10A37F" d="M16 9.5h-1v2h1c.28 0 .5.22.5.5s-.22.5-.5.5h-1v2h1c1.38 0 2.5-1.12 2.5-2.5S17.38 9.5 16 9.5z"/>
+                    <path fill="#10A37F" d="M10 9.5h4v5h-4v-5zm2-1.5c-2.21 0-4 1.79-4 4v7h2v-2h4v2h2v-7c0-2.21-1.79-4-4-4z"/>
+                  </svg>
+                  Support Now with GPT Codex
                 </>
               )}
             </button>
@@ -239,6 +279,24 @@ const styles = {
     opacity: 0.8,
     cursor: 'not-allowed',
     transform: 'none',
+  },
+  gptButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px 40px',
+    fontSize: '20px',
+    fontWeight: '700',
+    color: '#FFFFFF',
+    background: 'linear-gradient(135deg, #065F46 0%, #064E3B 100%)',
+    border: '1px solid rgba(16, 185, 129, 0.3)',
+    borderRadius: '16px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 10px 30px -10px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+    width: '100%',
+    maxWidth: '400px',
+    marginTop: '20px',
   },
   spinner: {
     border: '3px solid rgba(255,255,255,0.3)',
