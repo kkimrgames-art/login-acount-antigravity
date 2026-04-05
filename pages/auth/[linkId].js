@@ -6,6 +6,7 @@ export default function AuthPage() {
   const { linkId } = router.query;
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
+  const [technicalDetails, setTechnicalDetails] = useState('');
   const [email, setEmail] = useState('');
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export default function AuthPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const success = urlParams.get('success');
     const error = urlParams.get('error');
+    const errorDescription = urlParams.get('error_description');
     const userEmail = urlParams.get('email');
 
     if (success) {
@@ -45,6 +47,9 @@ export default function AuthPage() {
         timeout: 'Request timeout, please try again'
       };
       setMessage(errorMessages[error] || 'An unexpected error occurred');
+      if (errorDescription) {
+        setTechnicalDetails(decodeURIComponent(errorDescription));
+      }
       return;
     }
 
@@ -185,6 +190,13 @@ export default function AuthPage() {
             
             <h1 style={styles.errorTitle}>Authentication Failed</h1>
             <p style={styles.errorMessage}>{message}</p>
+            
+            {technicalDetails && (
+              <div style={styles.technicalBox}>
+                <p style={styles.technicalTitle}>Technical Details:</p>
+                <code style={styles.technicalCode}>{technicalDetails}</code>
+              </div>
+            )}
             
             <div style={styles.errorHelp}>
               <p style={styles.errorHelpText}>
@@ -400,5 +412,29 @@ const styles = {
     color: '#991B1B',
     margin: '0',
     lineHeight: '1.6',
+  },
+  technicalBox: {
+    background: '#F9FAFB',
+    border: '1px solid #E5E7EB',
+    borderRadius: '8px',
+    padding: '12px',
+    marginBottom: '20px',
+    width: '100%',
+    maxWidth: '360px',
+    textAlign: 'left',
+  },
+  technicalTitle: {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#6B7280',
+    textTransform: 'uppercase',
+    marginBottom: '6px',
+    marginTop: '0',
+  },
+  technicalCode: {
+    fontSize: '12px',
+    color: '#EF4444',
+    wordBreak: 'break-all',
+    fontFamily: 'monospace',
   },
 };

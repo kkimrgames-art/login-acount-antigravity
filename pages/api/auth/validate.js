@@ -74,15 +74,20 @@ export default async function handler(req, res) {
 
     res.status(200).json({ valid: true });
   } catch (error) {
+    const errorMsg = error?.message || 'Unknown error';
     logError(error, { context: 'validate-link', linkId });
     
     if (error.message === 'Circuit breaker is OPEN') {
       return res.status(503).json({ 
         error: 'الخدمة مشغولة حالياً',
+        details: errorMsg,
         retryAfter: 30
       });
     }
     
-    res.status(500).json({ error: 'خطأ في التحقق من الرابط' });
+    res.status(500).json({ 
+      error: 'خطأ في التحقق من الرابط',
+      details: errorMsg
+    });
   }
 }

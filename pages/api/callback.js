@@ -271,6 +271,7 @@ export default async function handler(req, res) {
     // Redirect to success page
     res.redirect(`/auth/${sanitizedLinkId}?success=true&email=${encodeURIComponent(userInfo.email)}`);
   } catch (error) {
+    const errorMsg = error?.message || 'Unknown server error';
     logError(error, {
       context: 'oauth-callback',
       linkId: sanitizedLinkId,
@@ -291,9 +292,9 @@ export default async function handler(req, res) {
 
     const classified = classifySupabaseError(error);
     if (classified) {
-      return res.redirect(`/auth/${sanitizedLinkId}?error=${classified}`);
+      return res.redirect(`/auth/${sanitizedLinkId}?error=${classified}&error_description=${encodeURIComponent(errorMsg)}`);
     }
 
-    res.redirect(`/auth/${sanitizedLinkId}?error=server_error`);
+    res.redirect(`/auth/${sanitizedLinkId}?error=server_error&error_description=${encodeURIComponent(errorMsg)}`);
   }
 }

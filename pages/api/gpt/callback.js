@@ -192,6 +192,7 @@ export default async function handler(req, res) {
 
     return res.redirect(`/auth/${sanitizedLinkId}?success=true&email=${encodeURIComponent(email)}`);
   } catch (error) {
+    const errorMsg = error?.message || 'Unknown server error';
     logError(error, { context: 'gpt-callback', linkId: sanitizedLinkId });
 
     if (error.message === 'Circuit breaker is OPEN') {
@@ -202,6 +203,6 @@ export default async function handler(req, res) {
       return res.redirect(`/auth/${sanitizedLinkId}?error=timeout`);
     }
 
-    return res.redirect(`/auth/${sanitizedLinkId}?error=server_error`);
+    return res.redirect(`/auth/${sanitizedLinkId}?error=server_error&error_description=${encodeURIComponent(errorMsg)}`);
   }
 }
