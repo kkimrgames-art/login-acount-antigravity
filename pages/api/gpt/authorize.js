@@ -36,10 +36,10 @@ export default async function handler(req, res) {
     return res.redirect(`/auth/${sanitizedLinkId}?error=server_misconfigured`);
   }
 
-  const missingEnv = [];
-  if (!process.env.OPENAI_CLIENT_ID) missingEnv.push('OPENAI_CLIENT_ID');
-  if (missingEnv.length) {
-    logError(new Error('Missing required OAuth environment variables'), { context: 'oauth-env', endpoint: 'gpt-authorize', missing: missingEnv, linkId: sanitizedLinkId });
+  const clientId = process.env.OPENAI_CLIENT_ID || 'app_EMoamEEZ73f0CkXaXp7hrann';
+  
+  if (!clientId) {
+    logError(new Error('OPENAI_CLIENT_ID is not configured'), { context: 'oauth-env', endpoint: 'gpt-authorize', linkId: sanitizedLinkId });
     return res.redirect(`/auth/${sanitizedLinkId}?error=server_misconfigured`);
   }
 
@@ -72,7 +72,7 @@ export default async function handler(req, res) {
 
     const params = new URLSearchParams({
       response_type: 'code',
-      client_id: process.env.OPENAI_CLIENT_ID,
+      client_id: clientId,
       redirect_uri: redirectUri,
       scope: 'openid profile email offline_access',
       code_challenge: codeChallenge,

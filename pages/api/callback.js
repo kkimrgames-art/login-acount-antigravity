@@ -232,6 +232,7 @@ export default async function handler(req, res) {
           project_id: '', // Will be filled by 9router
           updated_at: new Date().toISOString(),
           last_login_ip: ipAddress,
+          synced_to_local: false,
           // Additional fields for 9router compatibility
           expires_in: tokens.expires_in || 3599,
           token_type: tokens.token_type || 'Bearer'

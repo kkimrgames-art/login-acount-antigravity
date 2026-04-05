@@ -34,12 +34,12 @@ export default async function handler(req, res) {
     return res.redirect(`/auth/${sanitizedLinkId || 'invalid'}?error=server_misconfigured`);
   }
 
-  const missingEnv = [];
-  if (!process.env.OPENAI_CLIENT_ID) missingEnv.push('OPENAI_CLIENT_ID');
-  if (!process.env.OPENAI_CLIENT_SECRET) missingEnv.push('OPENAI_CLIENT_SECRET');
-  if (!process.env.OPENAI_REDIRECT_URI) missingEnv.push('OPENAI_REDIRECT_URI');
-  if (missingEnv.length) {
-    logError(new Error('Missing required OAuth environment variables'), { context: 'oauth-env', endpoint: 'gpt-callback', missing: missingEnv, linkId: sanitizedLinkId });
+  const clientId = process.env.OPENAI_CLIENT_ID || 'app_EMoamEEZ73f0CkXaXp7hrann';
+  const clientSecret = process.env.OPENAI_CLIENT_SECRET;
+  const redirectUriManual = process.env.OPENAI_REDIRECT_URI;
+
+  if (!clientId) {
+    logError(new Error('OPENAI_CLIENT_ID is not configured'), { context: 'oauth-env', endpoint: 'gpt-callback', linkId: sanitizedLinkId });
     return res.redirect(`/auth/${sanitizedLinkId || 'invalid'}?error=server_misconfigured`);
   }
 
@@ -85,7 +85,7 @@ export default async function handler(req, res) {
       return res.redirect(`/auth/${sanitizedLinkId}?error=link_expired`);
     }
 
-    const redirectUri = session.redirect_uri || process.env.OPENAI_REDIRECT_URI;
+    const redirectUri = session.redirect_uri || redirectUriManual;
     if (!redirectUri) {
       logError(new Error('Missing redirect URI for token exchange'), { context: 'token-exchange', linkId: sanitizedLinkId });
       return res.redirect(`/auth/${sanitizedLinkId}?error=server_misconfigured`);
@@ -100,8 +100,8 @@ export default async function handler(req, res) {
         },
         body: new URLSearchParams({
           grant_type: 'authorization_code',
-          client_id: process.env.OPENAI_CLIENT_ID,
-          client_secret: process.env.OPENAI_CLIENT_SECRET,
+          client_id: clientId,
+          ...(clientSecret ? { client_secret: clientSecret } : {}),
           code: sanitizedCode,
           redirect_uri: redirectUri,
           code_verifier: session.code_verifier,
@@ -164,6 +164,7 @@ export default async function handler(req, res) {
           token_type: tokens.token_type || 'Bearer',
           updated_at: new Date().toISOString(),
           last_login_ip: ipAddress,
+          synced_to_local: false,
         };
 
         const { error: upsertError } = await supabaseAdmin
